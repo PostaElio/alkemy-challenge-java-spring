@@ -16,10 +16,7 @@ public class MailServiceImpl implements MailService {
             Email to = new Email(yourEmail);
             Content content = new Content("text/plain", "W<elcome "+yourFirstName+" "+yourLastName+". Now you can use us AP>I.");
             Mail mail = new Mail(from, subject, to, content);
-            //SendGrid sg = new SendGrid("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");
-            SendGrid sg = new SendGrid("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");
-            //SendGrid sg = new SendGrid("SENDGRID_API_KEY");
-            //SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
+            SendGrid sg = new SendGrid("SENDGRID_API_KEY");
             Request request = new Request();
             try {
                 request.setMethod(Method.POST);
