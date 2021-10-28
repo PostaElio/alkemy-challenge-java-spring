@@ -16,7 +16,7 @@ public class CharacterEntity {
     private Long id;
     @Column(nullable = false)
     private String image;
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
     @Column(nullable = false)
     private int age;
@@ -27,16 +27,15 @@ public class CharacterEntity {
     @JsonIgnore
 
 
-    @ManyToMany(mappedBy = "characterEntities",fetch = FetchType.EAGER)
+    //@ManyToMany(mappedBy = "characterEntities",fetch = FetchType.EAGER)
 
-    /*
     @ManyToMany(fetch = FetchType.EAGER, cascade ={CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name="movie_characters",
             joinColumns =  @JoinColumn(name = "character_id"),
             inverseJoinColumns = @JoinColumn(name= "movie_id"))
 
-     */
+
     private Set<MovieEntity> movieEntities = new HashSet<MovieEntity>();
 
     public CharacterEntity(String image, String name, int age, float weight, String history) {

@@ -29,19 +29,13 @@ public class MovieEntity {
     private Date creationdate;
     @Column(nullable = false)
     private int clasification;
-    //Me gustaria que los personajes que estan incluides en solo la pelicula que va ser eliminada tambien se eliminen
-    @JsonIgnore
-    //@ManyToMany(mappedBy = "movieEntities",fetch = FetchType.EAGER)
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade ={CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name="movie_characters",
-            joinColumns =  @JoinColumn(name = "movie_id"),
-            inverseJoinColumns = @JoinColumn(name= "character_id"))
+    @JsonIgnore
+    @ManyToMany(mappedBy = "movieEntities",fetch = FetchType.EAGER)
     private Set<CharacterEntity> characterEntities = new HashSet<CharacterEntity>();
 
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER,cascade = {CascadeType.PERSIST, CascadeType.ALL})
+    @ManyToMany(fetch = FetchType.EAGER,cascade = {CascadeType.PERSIST})
     @JoinTable(
             name="movie_genders",
             joinColumns =  @JoinColumn(name = "movie_id"),
@@ -60,8 +54,13 @@ public class MovieEntity {
          characterEntity.getMovieEntities().add(this);
     }
     public void removeCharacter(CharacterEntity characterEntity){
+
         this.characterEntities.remove(characterEntity);
+
+        System.out.println("cantida de personajes en una pelicuala: "+this.characterEntities.size());
         characterEntity.getMovieEntities().remove(this);
+        System.out.println("cantiad de peliculas en las que participa un personaje: "+characterEntity.getMovieEntities().size());
+
     }
 
     public void addGender(GenderEntity genderEntity) {

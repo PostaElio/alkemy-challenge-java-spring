@@ -8,15 +8,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends JpaRepository<MovieEntity,Long> {
 
-    Boolean existsByTitleAndCreationdate(String title,Date creationDate);
-
-    Boolean existsByTitle(String title);
-
-    Boolean existsByCreationdate(Date creationDate);
+    @Query("select case when (count(m)> 0) then true else false end from MovieEntity m where m.creationdate = :creationdate AND m.title = :title")
+    boolean existsByTitleAndCreationdate1(String title,Date creationdate);
 
     List<MovieEntity> findByOrderByCreationdateAsc();
 
@@ -26,6 +24,4 @@ public interface MovieRepository extends JpaRepository<MovieEntity,Long> {
 
     @Query("SELECT DISTINCT m FROM MovieEntity m WHERE (SELECT g FROM GenderEntity g WHERE g.id = :id) MEMBER OF m.genderEntities")
     List<MovieEntity> getByIdGenre(@Param("id") Long id);
-
-    MovieEntity getByTitleAndCreationdate(String title,Date crationDate);
 }

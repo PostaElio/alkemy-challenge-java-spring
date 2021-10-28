@@ -7,13 +7,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class CharacterServiceTest {
@@ -88,24 +89,21 @@ class CharacterServiceTest {
                 10);
         movieEntity = movieService.save(movieEntity);
 
-        movieService.setCharacterInMovie(
+        movieService.addCharacterInMovie(
                 movieEntity.getId(),
                 characterEntity1.getId());
-
-        movieService.setCharacterInMovie(
+        movieService.addCharacterInMovie(
                 movieEntity.getId(),
                 characterEntity2.getId());
-        movieService.setCharacterInMovie(
+        movieService.addCharacterInMovie(
                 movieEntity.getId(),
                 characterEntity3.getId());
-        movieService.setCharacterInMovie(
+        movieService.addCharacterInMovie(
                 movieEntity.getId(),
                 characterEntity4.getId());
-        movieService.setCharacterInMovie(
+        movieService.addCharacterInMovie(
                 movieEntity.getId(),
                 characterEntity5.getId());
-
-
     }
 
     @AfterEach
@@ -114,27 +112,43 @@ class CharacterServiceTest {
         movieService.deleteAll();
         characterService.deleteAll();
 
+
     }
 
     @Test
     void trySaveCharacterWithAtributtesNull(){
-        characterEntity5 = new CharacterEntity(
+        assertThrows(Exception.class, () ->
+                characterService.save(new CharacterEntity(
                 null,
-                "Dash Parr",
-                10,
-                1.2F,
-                "Also known as Dash is one of the two tritagonists (alongside Violet Parr) of The Incredibles, " +
-                        "and Incredibles 2. He is the son and middle child of Bob and Helen Parr, the younger brother " +
-                        "of Violet, and the older brother of Jack-Jack");
-        try{
-            characterService.save(characterEntity5);
-        }catch (Exception ex){
-
-        }finally {
-            assertEquals(5,characterService.getCharacters().size());
-        }
-
+                "Mickey Mouse",
+                1,
+                1.5F,
+                "dsfgdfgdfgdfgdfgk")));
     };
+
+    @Test
+    void update() throws Exception{
+        characterEntity1.setName("Monsters Inc");
+        characterEntity1.setImage("nuevaimagen.png");
+        Long characterId =characterEntity1.getId();
+        characterService.update(characterId,characterEntity1);
+
+        assertEquals("Monsters Inc",characterService.findById(characterId).getName());
+        assertEquals("nuevaimagen.png",characterService.findById(characterId).getImage());
+    }
+
+    @Test
+    void tryUpdateAIdNonExistent(){
+        characterEntity1.setName("Monsters Inc");
+        assertThrows(EmptyResultDataAccessException.class, () -> characterService.update(132*465+10L,characterEntity1));
+    }
+
+    @Test
+    void tryUpdateAGenderWithNameExistent(){
+        characterEntity1.setName("Jack-Jack Parr");
+        assertThrows(DataIntegrityViolationException.class, () -> characterService.update(characterEntity1.getId(),characterEntity1));
+    }
+
     @Test
     void getCharacters() {
         assertEquals(5,characterService.getCharacters().size());
@@ -145,23 +159,43 @@ class CharacterServiceTest {
 DROP TABLE movie_characters;
 DROP TABLE characters ;
 DROP TABLE movies;
+
+
+DROP TABLE movie_genders;
+DROP TABLE movie_characters;
+DROP TABLE characters ;
+DROP TABLE movies;
+DROP TABLE genders;
+DROP TABLE users
      */
 
     @Test
-    void deleteById(){
-        //Eliminamos un personaje, y la pelicula se persiste
+    void deleteFirstHisCharactersForDeleteAMovie() throws Exception {
+        //Para eliminar una pelicula tenemos que eliminar todos sus personajes
+        characterService.deleteAll();
+        //Podemos eliminarlo por que le eliminamos todos sus personajes asociados
+        movieService.deleteById(movieEntity.getId());
+
+        assertEquals(0,characterService.getCharacters().size());
+        assertEquals(0,movieService.getMovies().size());
+    }
+
+    @Test
+    void deleteAnyCharactersForAMovieThisCanBeDeleteBecuseHasMovie() {
+        //Eliminamos algunos personajes, no podemos eliminar la pelicula por que todavia tiene personajes
         characterService.deleteById(characterEntity1.getId());
-        assertEquals(4,characterService.getCharacters().size());
+        characterService.deleteById(characterEntity2.getId());
+        //No podemos eliminarlo por que tiene personajes asociados
+        assertThrows(Exception.class,() -> movieService.deleteById(movieEntity.getId()));
+
+        assertEquals(3,characterService.getCharacters().size());
         assertEquals(1,movieService.getMovies().size());
     }
+
     @Test
-    void trydeleteACharacterWithIDDontExists() throws EmptyResultDataAccessException{
-        Long idFAKE = 321*500+10L;
-        try {
-            characterService.deleteById(idFAKE);
-        }catch (EmptyResultDataAccessException ex){
-            assertEquals("Character with id "+idFAKE+" not found in database",ex.getMessage());
-        }
+    void trydeleteACharacterWithIDDontExists() {
+        assertThrows(EmptyResultDataAccessException.class, () ->
+                characterService.deleteById(321*500+10L));
     }
 
     @Test
@@ -185,12 +219,12 @@ DROP TABLE movies;
     @Test
     void getByIdMovie(){
         List<CharacterEntity> characterEntities = characterService.getByIdMovie(movieEntity.getId());
-       // assertEquals(5,characterEntities.size());
-        /*
+        assertEquals(5,characterEntities.size());
+
         List<String> names =new ArrayList<>(List.of("Robert Bob Parr","Violet Parr","Helen Parr","Jack-Jack Parr","Dash Parr"));
         assertTrue(characterEntities.stream()
                 .map(characterEntity -> names.contains(characterEntity.getName()))
-                .reduce(Boolean::logicalAnd).get());*/
+                .reduce(Boolean::logicalAnd).get());
     }
 
 }

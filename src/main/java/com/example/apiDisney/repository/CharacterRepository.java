@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface CharacterRepository extends JpaRepository<CharacterEntity,Long> {
 
+    boolean existsByName(String name);
+
     List<CharacterEntity> getByName(String name);
 
     List<CharacterEntity> getByAge(int age);

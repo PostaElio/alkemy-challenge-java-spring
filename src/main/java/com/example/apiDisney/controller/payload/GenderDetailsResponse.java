@@ -8,6 +8,7 @@ import java.util.List;
 
 @Data
 public class GenderDetailsResponse {
+    private Long id;
     private String name;
     private String image;
     private List<MovieEntity> movieEntities = new ArrayList<MovieEntity>();

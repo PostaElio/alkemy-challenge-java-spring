@@ -1,6 +1,7 @@
 package com.example.apiDisney.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class GenderEntity {
     @Column(nullable = false)
     private String image;
     @Column(name = "title")
+    @JsonIgnore
     @ManyToMany(mappedBy = "genderEntities", fetch = FetchType.EAGER)
     private Set<MovieEntity> movieEntities = new HashSet<MovieEntity>();
 

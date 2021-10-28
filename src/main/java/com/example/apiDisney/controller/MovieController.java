@@ -1,13 +1,13 @@
 package com.example.apiDisney.controller;
 
-import com.example.apiDisney.controller.payload.ApiResponse;
-import com.example.apiDisney.controller.payload.MovieCompactResponse;
-import com.example.apiDisney.controller.payload.MovieDetailResponse;
-import com.example.apiDisney.controller.payload.MovieRequest;
+import com.example.apiDisney.controller.payload.*;
 import com.example.apiDisney.model.MovieEntity;
 import com.example.apiDisney.service.MovieService;
+import com.example.apiDisney.service.exception.CustomException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,21 +25,38 @@ public class MovieController {
     @PostMapping()
     public ResponseEntity<ApiResponse> save(@RequestBody MovieRequest movieRequest) throws Exception{
         try{
-            ModelMapper modelMapper = new ModelMapper();
-            movieService.save(modelMapper.map(movieRequest, MovieEntity.class));
-        }catch (Exception ex){
-            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with title and  creation date exists in database"), HttpStatus.BAD_REQUEST);
+            movieService.save(new ModelMapper().map(movieRequest, MovieEntity.class));
+            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE, "Movie added successfully"), HttpStatus.CREATED);
+        }catch (CustomException ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+        }catch (DataIntegrityViolationException ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE,ex.getMessage()),HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ApiResponse(Boolean.TRUE, "Movie added successfully"), HttpStatus.OK);
     }
 
-    @PostMapping(path = "/{id}")
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<ApiResponse> update(@PathVariable("id") Long id, @RequestBody MovieRequest movieRequest) {
+        try {
+            movieService.update(id,new ModelMapper().map(movieRequest, MovieEntity.class));
+            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE, "Movie update successfully"), HttpStatus.OK);
+        }catch (CustomException ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+        catch (EmptyResultDataAccessException ex) {
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with id " + id + " does not exist in the database"), HttpStatus.NOT_FOUND);
+        }
+        catch (DataIntegrityViolationException ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, ex.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping(path = "/{id}")
     public ResponseEntity<?> getById(@PathVariable("id") Long id) {
         try {
             ModelMapper modelMapper = new ModelMapper();
             return new ResponseEntity<>(modelMapper.map(movieService.findById(id), MovieDetailResponse.class), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with id " + id + " does not exist in the database"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with id " + id + " does not exist in the database"), HttpStatus.NOT_FOUND);
         }
     }
 
@@ -56,34 +73,28 @@ public class MovieController {
 
     @GetMapping("/details")
     public ResponseEntity<List<MovieDetailResponse>> getCharactersDetail() {
-
         return new ResponseEntity<>(toMoviesDetailResponse(movieService.getMovies()), HttpStatus.OK);
     }
 
-
-    /**********-- DELETE BY ID - MOVIE --************/
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<ApiResponse> deletebyId(@PathVariable("id") Long id) {
         try {
             movieService.deleteById(id);
             return new ResponseEntity<>(new ApiResponse(Boolean.TRUE, "Movie with id " + id + " is deleted"), HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with id " + id + " does not exist in the database"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Movie with id " + id + " does not exist in the database"), HttpStatus.NOT_FOUND);
         }
     }
 
-    /**********-- DELETE ALL - MOVIE --************/
     @DeleteMapping()
     public ResponseEntity<ApiResponse> deleteAll() {
         movieService.deleteAll();
         return new ResponseEntity<>(new ApiResponse(Boolean.TRUE, "All Movies are deleted"), HttpStatus.OK);
     }
-
     /**********-- QUERY - MOVIE --************/
-
     @GetMapping(params = "name")
     public ResponseEntity<List<MovieDetailResponse>> getByName(@RequestParam("name") String name) {
-        return new ResponseEntity<>(toMoviesDetailResponse(movieService.getByName(name)), HttpStatus.OK);
+        return new ResponseEntity<>(toMoviesDetailResponse(movieService.getByTitle(name)), HttpStatus.OK);
     }
 
     @GetMapping(params = "genre")
@@ -92,7 +103,7 @@ public class MovieController {
     }
 
     @GetMapping(params = "order")
-    public ResponseEntity<?> getMoviesSorted(@RequestParam("order") String order) throws Exception {
+    public ResponseEntity<?> getMoviesSorted(@RequestParam("order") String order) {
         String orderUpper = order.toUpperCase();
         if (orderUpper.equals("ASC")) {
             return new ResponseEntity<>(toMoviesDetailResponse(movieService.findAllByOOrderByCration_dateAsc()), HttpStatus.OK);
@@ -102,7 +113,26 @@ public class MovieController {
             return new ResponseEntity<>(new ApiResponse(Boolean.FALSE, "Enter an order ASC | DESC"), HttpStatus.BAD_REQUEST);
         }
     }
-
+    /**********-- add charecter or gender --************/
+    @PutMapping("/{movieId}/character/{characterId}")
+    public ResponseEntity<ApiResponse> addCharacterToMovie(@PathVariable Long movieId, @PathVariable Long characterId) {
+        try {
+            movieService.addCharacterInMovie(movieId,characterId);
+            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE,"Character added to movie"),HttpStatus.OK);
+        }catch (Exception ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE,"The id's entered are incorrect or the movie already contains the character"),HttpStatus.NOT_FOUND);
+        }
+    }
+    @PutMapping("/{movieId}/gender/{genderId}")
+    public ResponseEntity<ApiResponse> addGenderToMovie(@PathVariable Long movieId, @PathVariable Long genderId) {
+        try {
+            movieService.addGenderInMovie(movieId,genderId);
+            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE,"Gender added to movie"),HttpStatus.OK);
+        }catch (Exception ex){
+            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE,"The id's entered are incorrect or the movie already contains the gender"),HttpStatus.NOT_FOUND);
+        }
+    }
+    /**********-- HELP --************/
     private List<MovieDetailResponse> toMoviesDetailResponse(List<MovieEntity> movieEntities) {
         ModelMapper modelMapper = new ModelMapper();
         List<MovieDetailResponse> movieDetailResponses = movieEntities
@@ -110,24 +140,5 @@ public class MovieController {
                         modelMapper.map(movieEntity, MovieDetailResponse.class))
                 .collect(Collectors.toList());
         return movieDetailResponses;
-    }
-    /**********-- add charecter or gender --************/
-    @PutMapping("/{movieId}/character/{characterId}")
-    public ResponseEntity<ApiResponse> addCharacterToMovie(@PathVariable Long movieId, @PathVariable Long characterId) {
-        try {
-            movieService.setCharacterInMovie(movieId,characterId);
-            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE,"Character added to movie"),HttpStatus.OK);
-        }catch (Exception ex){
-            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE,"The id's entered are incorrect or the movie already contains the character"),HttpStatus.OK);
-        }
-    }
-    @PutMapping("/{movieId}/gender/{genderId}")
-    public ResponseEntity<ApiResponse> addGenderToMovie(@PathVariable Long movieId, @PathVariable Long genderId) {
-        try {
-            movieService.setGenderInMovie(movieId,genderId);
-            return new ResponseEntity<>(new ApiResponse(Boolean.TRUE,"Gender added to movie"),HttpStatus.OK);
-        }catch (Exception ex){
-            return new ResponseEntity<>(new ApiResponse(Boolean.FALSE,"The id's entered are incorrect or the movie already contains the gender"),HttpStatus.OK);
-        }
     }
 }
