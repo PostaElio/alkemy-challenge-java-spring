@@ -182,14 +182,14 @@ class SetUpValues {
         movieService.addCharacterInMovie(myMix.getId(),entity6.getId());
         movieService.addCharacterInMovie(myMix.getId(),entity1.getId());
     }
-/*
+
     @AfterEach
     void tearDown() {
-
         movieService.deleteAll();
         characterService.deleteAll();
         genderService.deleteAll();
-    }*/
+    }
+
     @Test
     void cuestion() throws Exception{
         Long theIncrediblesId = theIncredibles.getId();
