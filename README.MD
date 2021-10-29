@@ -25,9 +25,11 @@ SendGrid sg = new SendGrid("SENDGRID_API_KEY");
 ### Dependencies
 - Spring Web
 - Spring Security
-- JPA
+- Java Persistence API
 - PSQL
-- JWT
+- Json Web Token
 - Send Grid
 - Model Maper
 - Lombok
+
+All tests work. If one fails, try to run it alone.*

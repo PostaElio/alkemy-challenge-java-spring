@@ -4,7 +4,6 @@ import com.example.apiDisney.model.CharacterEntity;
 import com.example.apiDisney.repository.CharacterRepository;
 import com.example.apiDisney.service.CharacterService;
 import com.example.apiDisney.service.exception.CustomException;
-import org.hibernate.PropertyValueException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -31,9 +30,7 @@ public class CharacterServiceImpl
     }
 
     public void update(Long id, CharacterEntity characterEntity) throws DataIntegrityViolationException, EmptyResultDataAccessException{
-
         characterEntity.setId(findById(id).getId());
-        //save(characterEntity);
         try{
             characterRepository.save(characterEntity);
         }catch(DataIntegrityViolationException ex){

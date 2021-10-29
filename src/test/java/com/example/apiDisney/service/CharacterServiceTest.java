@@ -2,6 +2,7 @@ package com.example.apiDisney.service;
 
 import com.example.apiDisney.model.CharacterEntity;
 import com.example.apiDisney.model.MovieEntity;
+import com.example.apiDisney.service.exception.CustomException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,13 +118,24 @@ class CharacterServiceTest {
 
     @Test
     void trySaveCharacterWithAtributtesNull(){
-        assertThrows(Exception.class, () ->
+        assertThrows(DataIntegrityViolationException.class, () ->
                 characterService.save(new CharacterEntity(
                 null,
                 "Mickey Mouse",
                 1,
                 1.5F,
                 "dsfgdfgdfgdfgdfgk")));
+    };
+
+    @Test
+    void trySaveWithExistsName(){
+        assertThrows(CustomException.class, () ->
+                characterService.save(new CharacterEntity(
+                        "image",
+                        "Dash Parr",
+                        1,
+                        1.5F,
+                        "dsfgdfgdfgdfgdfgk")));
     };
 
     @Test
@@ -153,21 +165,6 @@ class CharacterServiceTest {
     void getCharacters() {
         assertEquals(5,characterService.getCharacters().size());
     }
-
-    /*
-    DROP TABLE movie_genders;
-DROP TABLE movie_characters;
-DROP TABLE characters ;
-DROP TABLE movies;
-
-
-DROP TABLE movie_genders;
-DROP TABLE movie_characters;
-DROP TABLE characters ;
-DROP TABLE movies;
-DROP TABLE genders;
-DROP TABLE users
-     */
 
     @Test
     void deleteFirstHisCharactersForDeleteAMovie() throws Exception {

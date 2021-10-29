@@ -192,6 +192,8 @@ class SetUpValues {
 
     @Test
     void cuestion() throws Exception{
+        //Para eliminar una pelicual primero se debe eliminar a todos sus personajes,
+
         Long theIncrediblesId = theIncredibles.getId();
         Long mickeyMouseThePictureId = mickeyMouseThePicture.getId();
         Long myMixId = myMix.getId();

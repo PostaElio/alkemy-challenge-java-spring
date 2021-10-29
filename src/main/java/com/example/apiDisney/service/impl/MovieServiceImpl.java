@@ -67,7 +67,6 @@ public class MovieServiceImpl implements MovieService {
             } else {
                 throw new CustomException("Movie has charecters asigned,try deleted first the characters for delete this movie");
             }
-            //testeado en tryDeleteByIdNotExisting()
         }catch (NoSuchElementException ex){
             throw new NoSuchElementException("Movie with id " + id + " not found in database");
         }
@@ -93,7 +92,7 @@ public class MovieServiceImpl implements MovieService {
         return movieRepository.findByOrderByCreationdateAsc();
     }
 
-    public MovieEntity addCharacterInMovie(Long movie_id, Long character_id) throws InvalidDataAccessApiUsageException,EmptyResultDataAccessException, CustomException{
+    public MovieEntity addCharacterInMovie(Long movie_id, Long character_id) throws InvalidDataAccessApiUsageException,EmptyResultDataAccessException{
         try{
             MovieEntity movieEntity = this.findById(movie_id);
             CharacterEntity characterEntity = characterService.findById(character_id);

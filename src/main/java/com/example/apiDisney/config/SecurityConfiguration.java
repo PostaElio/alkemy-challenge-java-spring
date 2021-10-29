@@ -71,11 +71,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        //Para acceder a las demas paginas deberia tener el token y haber iniciado sesion?
-
-
     }
-
-
-
 }

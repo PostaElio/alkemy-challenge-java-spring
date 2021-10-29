@@ -58,6 +58,15 @@ class GenderServiceTest {
     }
 
     @Test
+    void trySaveWithPropertiesNull(){
+        assertThrows(DataIntegrityViolationException.class, () -> genderService.save(new GenderEntity(null,"path/to/image.png")));
+    }
+    @Test
+    void trySaveWithNameExists(){
+        assertThrows(CustomException.class, () -> genderService.save(new GenderEntity("Action","path/to/image.png")));
+    }
+
+    @Test
     void tryUpdateAIdNonExistent(){
         genderEntity1.setName("Terror");
         assertThrows(EmptyResultDataAccessException.class, () -> genderService.update(132*465+10L,genderEntity1));

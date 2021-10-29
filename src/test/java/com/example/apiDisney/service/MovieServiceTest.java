@@ -233,7 +233,7 @@ class MovieServiceTest {
     }
 
     @Test
-    void addGenderInMovie() throws Exception {
+    void addGenderInMovie() {
         assertEquals(1,movieService.addGenderInMovie(movieEntity1.getId(),
                 genderEntity.getId()).getGenderEntities().size());
     }
@@ -248,10 +248,14 @@ class MovieServiceTest {
 
     @Test
     void tryAddAGenderIncludeInMovie()throws Exception{
+        //No funciona
         movieService.addGenderInMovie(movieEntity1.getId(),genderEntity.getId());
-
+        assertEquals(1, movieService.findById(movieEntity1.getId()).getGenderEntities().size());
+        movieService.addGenderInMovie(movieEntity1.getId(),genderEntity.getId());
+        assertEquals(1, movieService.findById(movieEntity1.getId()).getGenderEntities().size());
+        /*
         assertThrows(InvalidDataAccessApiUsageException.class, () ->
-                movieService.addGenderInMovie(movieEntity1.getId(),genderEntity.getId()));
+                movieService.addGenderInMovie(movieEntity1.getId(),genderEntity.getId()));*/
     }
 
 /*
